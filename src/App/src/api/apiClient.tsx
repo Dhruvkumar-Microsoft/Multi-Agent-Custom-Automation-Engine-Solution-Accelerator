@@ -20,10 +20,10 @@ function syncBaseUrl(): void {
 }
 
 export const apiClient = {
-    get: <T = any>(url: string, config?: { params?: Record<string, unknown> }): Promise<T> => {
-        syncBaseUrl();
-        return httpClient.get<T>(url, { params: config?.params });
-    },
+   get: <T = any>(url: string, config?: { params?: Record<string, unknown>; timeout?: number }): Promise<T> => {
+       syncBaseUrl();
+       return httpClient.get<T>(url, { params: config?.params, timeout: config?.timeout });
+   },
 
     post: <T = any>(url: string, body?: unknown): Promise<T> => {
         syncBaseUrl();

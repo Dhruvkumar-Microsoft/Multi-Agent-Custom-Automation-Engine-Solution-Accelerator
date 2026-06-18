@@ -61,11 +61,11 @@ class HttpClient {
     }
 
     /** Core request method — applies interceptors, timeout, and error handling */
-    private async request(
+   private async request(
         path: string,
-        options: RequestInit & { params?: Record<string, unknown> } = {}
+        options: RequestInit & { params?: Record<string, unknown>; timeout?: number } = {}
     ): Promise<Response> {
-        const { params, ...fetchOptions } = options;
+        const { params, timeout, ...fetchOptions } = options;
         const url = this.buildUrl(path, params);
 
         // Build initial config
@@ -78,9 +78,11 @@ class HttpClient {
 
         const { url: finalUrl, ...rest } = config;
 
-        // Timeout via AbortController
+
+        // Timeout via AbortController (per-request override falls back to the default)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+        const timeoutId = setTimeout(() => controller.abort(), timeout ?? this.timeout);
+
 
         try {
             let response = await fetch(finalUrl, {
@@ -102,12 +104,13 @@ class HttpClient {
     /** HTTP GET */
     async get<T = unknown>(
         path: string,
-        config?: { params?: Record<string, unknown>; headers?: Record<string, string> }
+        config?: { params?: Record<string, unknown>; headers?: Record<string, string>; timeout?: number }
     ): Promise<T> {
         const response = await this.request(path, {
             method: 'GET',
             params: config?.params,
             headers: config?.headers,
+            timeout: config?.timeout,
         });
 
         if (!response.ok) {
